@@ -1,0 +1,28 @@
+buildscript {
+    ext {
+        //kotlin_version = '1.7.20'
+        //compose_bom_version = '2022.12.00'
+        //protobuf_gradle_version = '0.8.18'
+        //ktor_version = '1.6.2'
+        //protobuf_gradle_version = '0.8.18'
+        //room_version = '2.4.3'
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Hilt
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.40.5'
+    }
+}
+
+plugins {
+    id 'com.android.application' version '8.0.1' apply false
+    id 'com.android.library' version '8.0.1' apply false
+    id 'org.jetbrains.kotlin.android' version '1.7.20' apply false
+
+    // Hilt
+    id 'com.google.dagger.hilt.android' version '2.44' apply false
+
+}
