@@ -3,35 +3,24 @@ package com.example.app.vegastts.sms
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.telephony.SmsMessage
+import android.provider.Telephony
+import android.util.Log
 import com.example.app.vegastts.mainViewModel
 
 class SMSMonitor : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
 
-        if (intent != null && intent.action != null && ACTION.compareTo(intent.action!!) === 0) {
-
-            val pduArray = intent.extras!!["pdus"] as Array<Any>?
-            val messages: Array<SmsMessage?> = arrayOfNulls<SmsMessage>(pduArray!!.size)
-            for (i in pduArray!!.indices) {
-                messages[i] = SmsMessage.createFromPdu(pduArray[i] as ByteArray)
-            }
-
-            val sms_from: String = messages.get(0)?.getDisplayOriginatingAddress() ?: ""
-
-            if (sms_from.equals(mainViewModel.sender, ignoreCase = true)) {
-                val bodyText = StringBuilder()
-                for (i in 0 until messages.size) {
-                    bodyText.append(messages.get(i)?.getMessageBody() ?: "")
+        if (intent.action == Telephony.Sms.Intents.SMS_RECEIVED_ACTION) {
+            val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
+            for (message in messages) {
+                val sender = message.originatingAddress
+                if (sender.equals(mainViewModel.getSmsFrom(), ignoreCase = true)) {
+                    mainViewModel.smsBody.value = message.messageBody
+                    break
                 }
-                val body = bodyText.toString()
-
-                mainViewModel.smsBody.value = body
-
                 abortBroadcast()
             }
         }
-
     }
 
     companion object {

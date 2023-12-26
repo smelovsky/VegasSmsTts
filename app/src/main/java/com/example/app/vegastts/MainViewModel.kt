@@ -28,7 +28,6 @@ class MainViewModel @Inject constructor(
 
     val permissionsViewState = mutableStateOf(PermissionsViewState())
 
-    var sender = ""
     var smsBody = mutableStateOf("No message ")
 
     fun getPermissionsApi() : PermissionsApi {
@@ -41,11 +40,10 @@ class MainViewModel @Inject constructor(
                 _settingsViewState.value = mapSettingsToViewState(it)
             }
         }
+
     }
 
     private fun mapSettingsToViewState(settings: GlobalSettingsRepositoryApi.SettingsDb): SettingsViewState {
-
-        sender = settings.smsFrom.toString()
 
         return SettingsViewState(
             smsFrom = settings.smsFrom,
@@ -53,9 +51,6 @@ class MainViewModel @Inject constructor(
     }
 
     fun onSmsFrom(smsFrom: String) {
-
-        sender = smsFrom
-
         viewModelScope.launch(Dispatchers.Default) {
             globalSettingsRepositoryApi.setSettings(
                 globalSettingsRepositoryApi.settings.value.copy(
@@ -63,6 +58,10 @@ class MainViewModel @Inject constructor(
                 )
             )
         }
+    }
+
+    fun getSmsFrom () : String {
+        return globalSettingsRepositoryApi.settings.value.smsFrom.toString()
     }
 
 }
