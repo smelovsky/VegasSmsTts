@@ -13,10 +13,12 @@ import com.example.app.vegastts.mainViewModel
 
 val basePermissions = arrayOf(
     Manifest.permission.RECEIVE_SMS,
+    Manifest.permission.WAKE_LOCK,
 )
 
 data class PermissionsViewState(
     val RECEIVE_SMS: Boolean = false,
+    val WAKE_LOCK: Boolean = false,
 
     val permissionsGranted: Boolean = false,
 )
@@ -59,6 +61,9 @@ class PermissionsImpl(val context: Context): PermissionsApi {
 
                 Manifest.permission.RECEIVE_SMS -> mainViewModel.permissionsViewState.value =
                     mainViewModel.permissionsViewState.value.copy(RECEIVE_SMS = permission)
+
+                Manifest.permission.WAKE_LOCK -> mainViewModel.permissionsViewState.value =
+                    mainViewModel.permissionsViewState.value.copy(WAKE_LOCK = permission)
 
             }
         }

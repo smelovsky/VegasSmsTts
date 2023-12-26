@@ -16,10 +16,12 @@ interface GlobalSettingsRepositoryApi {
     companion object {
         val DEFAULT_SETTINGS = SettingsDb(
             smsFrom = "+7",
+            keepScreenOn = true,
         )
     }
 
     data class SettingsDb(
         val smsFrom: String?,
+        val keepScreenOn: Boolean,
     )
 }

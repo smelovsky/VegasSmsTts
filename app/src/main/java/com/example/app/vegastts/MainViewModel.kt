@@ -15,6 +15,7 @@ import javax.inject.Inject
 
 data class SettingsViewState(
     val smsFrom: String?,
+    val keepScreenOn: Boolean,
 )
 
 @HiltViewModel
@@ -47,6 +48,7 @@ class MainViewModel @Inject constructor(
 
         return SettingsViewState(
             smsFrom = settings.smsFrom,
+            keepScreenOn = settings.keepScreenOn,
         )
     }
 
@@ -62,6 +64,19 @@ class MainViewModel @Inject constructor(
 
     fun getSmsFrom () : String {
         return globalSettingsRepositoryApi.settings.value.smsFrom.toString()
+    }
+
+    fun onKeepScreenOn(keepScreenOn: Boolean) {
+        viewModelScope.launch(Dispatchers.Default) {
+            globalSettingsRepositoryApi.setSettings(
+                globalSettingsRepositoryApi.settings.value.copy(
+                    keepScreenOn = keepScreenOn
+                )
+            )
+        }
+    }
+    fun getKeepScreenOn () : Boolean {
+        return globalSettingsRepositoryApi.settings.value.keepScreenOn
     }
 
 }

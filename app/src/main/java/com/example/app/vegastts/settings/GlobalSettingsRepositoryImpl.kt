@@ -30,10 +30,8 @@ class GlobalSettingsRepositoryImpl(context: Context) : GlobalSettingsRepositoryA
     private fun load() {
         _settings.value = try {
             GlobalSettingsRepositoryApi.SettingsDb(
-                smsFrom = prefs.getString(
-                    SMS_FROM,
-                    GlobalSettingsRepositoryApi.DEFAULT_SETTINGS.smsFrom
-                ),
+                smsFrom = prefs.getString(SMS_FROM, GlobalSettingsRepositoryApi.DEFAULT_SETTINGS.smsFrom),
+                keepScreenOn = prefs.getBoolean(KEEP_SCREEN_ON, GlobalSettingsRepositoryApi.DEFAULT_SETTINGS.keepScreenOn),
             )
         } catch (ignored: Exception) {
             GlobalSettingsRepositoryApi.DEFAULT_SETTINGS
@@ -41,14 +39,14 @@ class GlobalSettingsRepositoryImpl(context: Context) : GlobalSettingsRepositoryA
     }
 
     private fun save(settings: GlobalSettingsRepositoryApi.SettingsDb) {
-        prefs.edit(commit = true) {
-            putString(SMS_FROM, settings.smsFrom)
-        }
+        prefs.edit(commit = true) { putString(SMS_FROM, settings.smsFrom) }
+        prefs.edit(commit = true) { putBoolean(KEEP_SCREEN_ON, settings.keepScreenOn) }
     }
 
     companion object {
         private const val PREFS_NAME = "global_settings"
         private const val SMS_FROM = "smsFrom"
+        private const val KEEP_SCREEN_ON = "keepScreenOn"
 
     }
 }

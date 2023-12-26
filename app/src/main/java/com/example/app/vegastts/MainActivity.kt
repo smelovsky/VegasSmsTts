@@ -1,17 +1,22 @@
 package com.example.app.vegastts
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.PowerManager
 import android.speech.tts.TextToSpeech
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -24,6 +29,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -36,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
@@ -58,6 +63,8 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     private lateinit var tts: TextToSpeech
     private var isTextToSpeechSuccess: Boolean = false
 
+    private lateinit var wakeLockPowerManager: PowerManager.WakeLock
+
     var isAppInited: Boolean = false
     var isFistStart: Boolean = true
 
@@ -71,6 +78,7 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         tts.speak(message, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
+    @SuppressLint("InvalidWakeLockTag")
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,9 +96,19 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
 
             if (isFistStart) {
                 if (mainViewModel.permissionsViewState.value.permissionsGranted) {
+
+                    val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+                    wakeLockPowerManager = powerManager.newWakeLock(
+                        PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.SCREEN_BRIGHT_WAKE_LOCK,
+                        "WakeLock")
+
+                    if (mainViewModel.getKeepScreenOn()) wakeLockPowerManager.acquire()
+
                     isFistStart = false
                 }
             }
+
+            val settingsViewState = mainViewModel.settingsViewState.collectAsState()
 
             VegasTTSTheme {
                 val context = LocalContext.current
@@ -113,7 +131,24 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                             }
                         )
                         },
-                        bottomBar = { },
+                        bottomBar = {
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column { Text("Keep screen on") }
+                                Spacer(Modifier.width(10.dp))
+                                Switch(
+                                    checked = settingsViewState.value.keepScreenOn,
+                                    onCheckedChange = {
+                                        if (it) wakeLockPowerManager.acquire() else wakeLockPowerManager.release()
+                                        mainViewModel.onKeepScreenOn(it)
+                                    },
+                                )
+                            }
+                        },
                     ) { innerPadding ->
 
                         val focusManager = LocalFocusManager.current
@@ -144,8 +179,6 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                                     }
 
                                 } else {
-
-                                    val settingsViewState = mainViewModel.settingsViewState.collectAsState()
 
                                     EditSingleLineWidget(
                                         modifier = Modifier.fillMaxWidth(),
